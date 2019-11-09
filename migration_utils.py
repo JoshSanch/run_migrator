@@ -43,20 +43,24 @@ def generate_run_request_data(existing_runs: Dict, target_category_id: str):
         request_body["comment"] = run["comment"]
 
         # Optional fields
-        if "splitsio" in run:
-            request_body["splitsio"] = run["splitsio"]
+        if "splits" in run:
+            request_body["splitsio"] = run["splits"]
 
         if "comment" in run:
             request_body["comment"] = run["comment"]
         
-        if "platform" in run:
-            request_body["platform"] = run["platform"]
+        if "system" in run:
+            if "platform" in run["system"]:
+                request_body["platform"] = run["system"]["platform"]
 
-        if "video" in run:
-            request_body["video"] = run["video"]
+            if "emulated" in run["system"]:
+                request_body["emulated"] = run["system"]["emulated"]
 
-        if "emulated" in run:
-            request_body["emulated"] = run["emulated"]
+            if "region" in run["system"]:
+                request_body["region"] = run["system"]["region"]
+
+        if "videos" in run and run["videos"] is not None:
+            request_body["video"] = run["videos"]["links"][0]["uri"]
 
         generated_runs.append(request_body)
 
