@@ -1,4 +1,5 @@
 import credentials_loader
+import json
 import requests
 
 from typing import Dict
@@ -23,7 +24,45 @@ def get_target_runs(category_id):
     leaderboard_data =  response.json()["data"]
     return leaderboard_data
 
-def post_runs(existing_runs: Dict):
+def generate_run_request_data(existing_runs: Dict, target_category_id: str):
+    """
+    Populate all necessary POST data values as specified by the SRC
+    documentation. Used as an intermediate state between either a POST
+    request or a text file dump.
+    """
+    generated_runs = []
+
     # Data params needed can be found at https://github.com/speedruncomorg/api/blob/master/version1/runs.md#post-runs
     for run in existing_runs:
-        pass
+        request_body = {}
+        request_body["category"] = target_category_id
+        request_body["date"] = run["date"]
+        request_body["verified"] = True,
+        request_body["times"] = run["times"]
+        request_body["players"] = run["players"]  # ALWAYS HAVE THIS - OTHERWISE SRC DEFAULTS TO MAKING SUBMITTER THE RUNNER
+        request_body["comment"] = run["comment"]
+
+        # Optional fields
+        if "splitsio" in run:
+            request_body["splitsio"] = run["splitsio"]
+
+        if "comment" in run:
+            request_body["comment"] = run["comment"]
+        
+        if "platform" in run:
+            request_body["platform"] = run["platform"]
+
+        if "video" in run:
+            request_body["video"] = run["video"]
+
+        if "emulated" in run:
+            request_body["emulated"] = run["emulated"]
+
+        generated_runs.append(request_body)
+
+    return generated_runs
+
+def dump_runs(runs, target_file_path):
+    with open(target_file_path, "w+") as dump_file:
+        for run in runs:
+            json.dump(run, dump_file, indent=4)
