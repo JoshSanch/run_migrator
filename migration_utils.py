@@ -66,7 +66,12 @@ def generate_run_request_data(existing_runs, target_category_id: str, workaround
     for run in existing_runs:
         request_body = {}
         request_body["category"] = target_category_id
-        request_body["verified"] = True
+
+        if not workaround_active:
+            # Don't verify so that runs can be manually updated by mods
+            # to have the correct submitting user
+            request_body["verified"] = True
+
         request_body["times"] = extract_times(run["times"])
         comment = ""  # Start robust comment handling for workaround
         
