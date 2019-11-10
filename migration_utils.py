@@ -8,7 +8,7 @@ from typing import Dict
 RUNS_ENDPOINT = "https://www.speedrun.com/api/v1/runs"
 CATEGORIES_ENDPOINT = "https://www.speedrun.com/api/v1/categories"
 
-def get_target_runs(category_id):
+def retrieve_target_runs(category_id):
     """
     Get all of the runs contained within an SRC leaderboard category as
     defined by the category's global ID. This ID is unique across all of SRC.
@@ -54,7 +54,7 @@ def get_target_runs(category_id):
         
     return leaderboard_data
 
-def generate_run_request_data(existing_runs, target_category_id: str):
+def generate_run_request_data(existing_runs, target_category_id: str, workaround_active):
     """
     Populate all necessary POST data values as specified by the SRC
     documentation. Used as an intermediate state between either a POST
@@ -68,11 +68,17 @@ def generate_run_request_data(existing_runs, target_category_id: str):
         request_body["category"] = target_category_id
         request_body["verified"] = True
         request_body["times"] = extract_times(run["times"])
-        request_body["players"] = run["players"]  # ALWAYS HAVE THIS - OTHERWISE SRC DEFAULTS TO MAKING SUBMITTER THE RUNNER
-        try:
-            request_body["players"][0].pop("uri")
-        except:
-            print("no player url found")
+        comment = ""  # Start robust comment handling for workaround
+        
+        # SRC is a good platform
+        # See run_mover.py for an explanation of why this is needed
+        if not workaround_active:
+            request_body["players"] = run["players"]  # ALWAYS HAVE THIS - OTHERWISE SRC DEFAULTS TO MAKING SUBMITTER THE RUNNER
+        
+            try:
+                request_body["players"][0].pop("uri")
+            except:
+                print("no player url found")
 
         # Optional fields
         if "date" in run and run["date"] is not None:
@@ -82,7 +88,7 @@ def generate_run_request_data(existing_runs, target_category_id: str):
             request_body["splitsio"] = run["splits"]
 
         if "comment" in run and run["comment"] is not None:
-            request_body["comment"] = run["comment"]
+            comment += run["comment"]
         
         if "system" in run:
             if "platform" in run["system"]:  # Not actually optional
@@ -96,6 +102,16 @@ def generate_run_request_data(existing_runs, target_category_id: str):
 
         if "videos" in run and run["videos"] is not None:
             request_body["video"] = run["videos"]["links"][0]["uri"]
+
+        # Handle SRC 500 error workaround - see run_mover.py for details
+        if workaround_active:
+            if comment:  # Append to existing comment
+                comment += f"\nMod note: Submitted by {retrieve_submitter_name(run)}"
+            else:
+                comment = f"Mod note: Submitted by {retrieve_submitter_name(run)}"
+
+        # Finalize comment to append
+        request_body["comment"] = comment
 
         generated_runs.append(request_body)
 
@@ -133,3 +149,19 @@ def dump_runs(runs, target_file_path):
     with open(target_file_path, "w+") as dump_file:
         for run in runs:
             json.dump(run, dump_file, indent=4)
+
+def retrieve_submitter_name(run):
+    run_player_data = run["players"][0]  # Assume this tool will only work for one-player runs
+    if run_player_data["rel"] == "guest":
+        # Simple - submitter name is hardcoded into run data
+        return run_player_data["name"]
+
+    # Perform get request on user ID to get user data for name extraction
+    request_url = run_player_data["uri"]  # "rel" has to be "user" if they're not a guest, meaning api returns a user url
+    response = requests.get(url=request_url)
+    
+    # Extract name data
+    user_data = response.json()["data"]
+    name = user_data["names"]["international"]
+    return name
+    
