@@ -13,14 +13,12 @@ def retrieve_target_runs(category_id):
     defined by the category's global ID. This ID is unique across all of SRC.
     """
     # Setup HTTP request data to get runs for category
-    # TODO: Handle pagination issues where I only get 20 results
     request_url = RUNS_ENDPOINT
     request_params = {
         "category": category_id,
         "status": "verified"
     }
 
-    # Setup intermediate dict for storing data
     leaderboard_data = []
 
     # Request and extract leaderboard data for given category
