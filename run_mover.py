@@ -1,6 +1,5 @@
-import credentials_loader
-from migration_utils import retrieve_target_runs, generate_run_request_data, dump_runs, post_formatted_runs, RUNS_ENDPOINT
-import game_ids
+from utils.credentials_loader import get_api_key
+from utils.migration_utils import retrieve_target_runs, generate_run_request_data, dump_runs, post_formatted_runs, RUNS_ENDPOINT
 
 """
 SRC has had a long running issue (documented as early as March of 2019) where
@@ -13,11 +12,11 @@ field to update to the correct value.
 Check on the status of this issue at:
 https://github.com/speedruncomorg/api/issues/87
 """
-WORKAROUND_ACTIVE = True
 
+# Workaround currently defaulted to True until #87 is resolved
 def move_runs(source_category_id, target_category_id, api_key_path, workaround_is_active=True):
     try:
-        api_key = credentials_loader.get_api_key(api_key_path)
+        api_key = get_api_key(api_key_path)
 
         # Get runs and copy them to be POSTed to new location
         print("API key loaded successfully.")
@@ -28,7 +27,7 @@ def move_runs(source_category_id, target_category_id, api_key_path, workaround_i
         print("Runs successfully acquired.")
         print("Generating new run submissions based on existing runs ...\n")
 
-        generated_submissions = generate_run_request_data(current_board_runs, target_id, workaround_is_active)
+        generated_submissions = generate_run_request_data(current_board_runs, target_category_id, workaround_is_active)
 
         print("Run submissions generated.")
 
@@ -42,10 +41,4 @@ def move_runs(source_category_id, target_category_id, api_key_path, workaround_i
     except Exception as ex:
         print("Error migrating runs. The following exception occurred:")
         print(ex)
-
-if __name__ == "__main__":
-    source_id = game_ids.C_TSSM_CHEATPERCENT
-    target_id = game_ids.C_TSSMCE_CHEATPERCENT
-
-    move_runs(source_id, target_id, WORKAROUND_ACTIVE, "api_key.json")
     

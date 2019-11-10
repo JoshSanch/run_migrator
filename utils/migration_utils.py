@@ -1,8 +1,7 @@
-import credentials_loader
 import json
 import requests
 
-from src_conversion_utils import extract_times
+from .src_conversion_utils import extract_times
 from typing import Dict
 
 RUNS_ENDPOINT = "https://www.speedrun.com/api/v1/runs"
