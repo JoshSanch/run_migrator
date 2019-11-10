@@ -21,12 +21,40 @@ def get_target_runs(category_id):
         "status": "verified"
     }
 
+    # Setup intermediate dict for storing data
+    leaderboard_data = []
+
     # Request and extract leaderboard data for given category
     response = requests.get(url=request_url, params=request_params)
-    leaderboard_data =  response.json()["data"]
+    response.raise_for_status()
+
+    for run in response.json()["data"]:
+        leaderboard_data.append(run)
+
+    # Handle pagination
+    pagination_data = response.json()["pagination"]["links"]
+    new_url = None
+    for page_data in pagination_data:
+        if page_data["rel"] == "next":
+            new_url = page_data["uri"]
+
+    # Start iterating through pages till we're done
+    while new_url is not None:
+        response = requests.get(url=new_url)
+        response.raise_for_status()
+
+        for run in response.json()["data"]:
+            leaderboard_data.append(run)
+
+        pagination_data = response.json()["pagination"]["links"]
+        new_url = None
+        for page_data in pagination_data:
+            if page_data["rel"] == "next":
+                new_url = page_data["uri"]
+        
     return leaderboard_data
 
-def generate_run_request_data(existing_runs: Dict, target_category_id: str):
+def generate_run_request_data(existing_runs, target_category_id: str):
     """
     Populate all necessary POST data values as specified by the SRC
     documentation. Used as an intermediate state between either a POST
@@ -78,12 +106,11 @@ def post_formatted_runs(runs, endpoint, api_key):
     This will always be the case if raw API data is run through 
     generate_run_request_data.
     """
-    dump_runs(runs, "test2.txt")
-
     for run in runs:
         data = {}
         data["run"] = run
         headers = {
+            "Accept": "application/json",
             "X-API-Key": api_key
         }
 
