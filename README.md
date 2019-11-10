@@ -13,3 +13,11 @@ the program will add a mod note to each submission with the exact name of the us
 ```run_mover.py``` contains the top level method, ```move_runs```, which can be used to copy runs to another leaderboard
 from a given source leaderboard. (**Note**: Until [this Github issue](https://github.com/speedruncomorg/api/issues/87) is resolved,
 the workaround flag should be set to True to make sure the workaround behavior is applied.)
+
+Usage:
+```
+source_category_id: The ID of the category that contains the source to be copied, as defined by the SRC API.
+target_category_id: The ID of the category that runs should be copied to, as defined by the SRC API.
+api_key_path: The path to the JSON file that contains the user's API key.
+workaround_is_active: Defaults to true. Activates the workaround behavior necessary while the SRC 500 error is yet to be fixed.
+```
