@@ -15,7 +15,7 @@ https://github.com/speedruncomorg/api/issues/87
 """
 WORKAROUND_ACTIVE = True
 
-def move_runs(source_category_id, target_category_id, workaround_is_active, api_key_path):
+def move_runs(source_category_id, target_category_id, api_key_path, workaround_is_active=True):
     try:
         api_key = credentials_loader.get_api_key(api_key_path)
 
