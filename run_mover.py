@@ -15,7 +15,7 @@ https://github.com/speedruncomorg/api/issues/87
 """
 WORKAROUND_ACTIVE = True
 
-def move_runs(source_category_id, target_category_id, api_key_path):
+def move_runs(source_category_id, target_category_id, workaround_is_active, api_key_path):
     try:
         api_key = credentials_loader.get_api_key(api_key_path)
 
@@ -28,7 +28,7 @@ def move_runs(source_category_id, target_category_id, api_key_path):
         print("Runs successfully acquired.")
         print("Generating new run submissions based on existing runs ...\n")
 
-        generated_submissions = generate_run_request_data(current_board_runs, target_id, WORKAROUND_ACTIVE)
+        generated_submissions = generate_run_request_data(current_board_runs, target_id, workaround_is_active)
 
         print("Run submissions generated.")
 
@@ -47,5 +47,5 @@ if __name__ == "__main__":
     source_id = game_ids.C_TSSM_CHEATPERCENT
     target_id = game_ids.C_TSSMCE_CHEATPERCENT
 
-    move_runs(source_id, target_id, "api_key.json")
+    move_runs(source_id, target_id, WORKAROUND_ACTIVE, "api_key.json")
     
