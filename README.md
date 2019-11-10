@@ -21,3 +21,9 @@ target_category_id: The ID of the category that runs should be copied to, as def
 api_key_path: The path to the JSON file that contains the user's API key.
 workaround_is_active: Defaults to true. Activates the workaround behavior necessary while the SRC 500 error is yet to be fixed.
 ```
+
+## Contributing
+Pull requests to add category & game IDs to expand the catalog of ready to use
+IDs for scripting purposes are much appreciated.
+
+Project requirements are contained within ```requirements.txt```.
