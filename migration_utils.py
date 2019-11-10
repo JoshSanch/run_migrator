@@ -66,7 +66,6 @@ def generate_run_request_data(existing_runs, target_category_id: str):
     for run in existing_runs:
         request_body = {}
         request_body["category"] = target_category_id
-        request_body["date"] = run["date"]
         request_body["verified"] = True
         request_body["times"] = extract_times(run["times"])
         request_body["players"] = run["players"]  # ALWAYS HAVE THIS - OTHERWISE SRC DEFAULTS TO MAKING SUBMITTER THE RUNNER
@@ -76,6 +75,9 @@ def generate_run_request_data(existing_runs, target_category_id: str):
             print("no player url found")
 
         # Optional fields
+        if "date" in run and run["date"] is not None:
+            request_body["date"] = run["date"]
+
         if "splits" in run and run["splits"] is not None:
             request_body["splitsio"] = run["splits"]
 
@@ -83,7 +85,7 @@ def generate_run_request_data(existing_runs, target_category_id: str):
             request_body["comment"] = run["comment"]
         
         if "system" in run:
-            if "platform" in run["system"]:
+            if "platform" in run["system"]:  # Not actually optional
                 request_body["platform"] = run["system"]["platform"]
 
             if "emulated" in run["system"]:
