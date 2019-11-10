@@ -14,7 +14,7 @@ the program will add a mod note to each submission with the exact name of the us
 from a given source leaderboard. (**Note**: Until [this Github issue](https://github.com/speedruncomorg/api/issues/87) is resolved,
 the workaround flag should be set to True to make sure the workaround behavior is applied.)
 
-Usage:
+Parameter Descriptions:
 ```
 source_category_id: The ID of the category that contains the source to be copied, as defined by the SRC API.
 target_category_id: The ID of the category that runs should be copied to, as defined by the SRC API.
