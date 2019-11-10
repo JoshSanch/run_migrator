@@ -2,6 +2,7 @@ import credentials_loader
 import json
 import requests
 
+from src_conversion_utils import extract_times
 from typing import Dict
 
 RUNS_ENDPOINT = "https://www.speedrun.com/api/v1/runs"
@@ -13,6 +14,7 @@ def get_target_runs(category_id):
     defined by the category's global ID. This ID is unique across all of SRC.
     """
     # Setup HTTP request data to get runs for category
+    # TODO: Handle pagination issues where I only get 20 results
     request_url = RUNS_ENDPOINT
     request_params = {
         "category": category_id,
@@ -37,16 +39,19 @@ def generate_run_request_data(existing_runs: Dict, target_category_id: str):
         request_body = {}
         request_body["category"] = target_category_id
         request_body["date"] = run["date"]
-        request_body["verified"] = True,
-        request_body["times"] = run["times"]
+        request_body["verified"] = True
+        request_body["times"] = extract_times(run["times"])
         request_body["players"] = run["players"]  # ALWAYS HAVE THIS - OTHERWISE SRC DEFAULTS TO MAKING SUBMITTER THE RUNNER
-        request_body["comment"] = run["comment"]
+        try:
+            request_body["players"][0].pop("uri")
+        except:
+            print("no player url found")
 
         # Optional fields
-        if "splits" in run:
+        if "splits" in run and run["splits"] is not None:
             request_body["splitsio"] = run["splits"]
 
-        if "comment" in run:
+        if "comment" in run and run["comment"] is not None:
             request_body["comment"] = run["comment"]
         
         if "system" in run:
@@ -65,6 +70,35 @@ def generate_run_request_data(existing_runs: Dict, target_category_id: str):
         generated_runs.append(request_body)
 
     return generated_runs
+
+def post_formatted_runs(runs, endpoint, api_key):
+    """
+    Runs going in here should represent the data format found
+    at https://github.com/speedruncomorg/api/blob/master/version1/runs.md#post-runs.
+    This will always be the case if raw API data is run through 
+    generate_run_request_data.
+    """
+    dump_runs(runs, "test2.txt")
+
+    for run in runs:
+        data = {}
+        data["run"] = run
+        headers = {
+            "X-API-Key": api_key
+        }
+
+        json_data = json.dumps(data)
+
+        attempts = 0
+        response = requests.post(url=RUNS_ENDPOINT, data=json_data, headers=headers)
+        while(attempts < 3 and response.status_code != 201):
+            attempts += 1
+            response = requests.post(url=RUNS_ENDPOINT, data=json_data, headers=headers)
+
+        if response.status_code != 201:
+            print(f"Run with date {run['date']} failed to upload.")
+            print(response.status_code)
+        
 
 def dump_runs(runs, target_file_path):
     with open(target_file_path, "w+") as dump_file:
