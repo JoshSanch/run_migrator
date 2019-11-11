@@ -1,5 +1,5 @@
 # run_migrator
-Python scripts for migrating runs between two category leaderboards on Speedrun.com.
+Python API implementation for migrating runs between two category leaderboards on Speedrun.com.
 
 **Note:** Currently there is a manual workaround necessary where submitting runs on behalf of another user 
 returns a 500 error, even if you have sufficient permissions to execute the request (board moderator/super moderator, etc.).
