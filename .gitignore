@@ -2,6 +2,7 @@
 __pycache__
 api_key.json
 *.txt
+.env
 !requirements.txt
 
 # Python virtual env

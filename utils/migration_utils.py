@@ -2,12 +2,13 @@ import json
 import requests
 
 from .src_conversion_utils import extract_times
+from api.scoping import Scope
 from typing import Dict
 
 RUNS_ENDPOINT = "https://www.speedrun.com/api/v1/runs"
 CATEGORIES_ENDPOINT = "https://www.speedrun.com/api/v1/categories"
 
-def retrieve_target_runs(category_id):
+def retrieve_target_runs(source_id, scope) -> list:
     """
     Get all of the runs contained within an SRC leaderboard category as
     defined by the category's global ID. This ID is unique across all of SRC.
@@ -15,16 +16,20 @@ def retrieve_target_runs(category_id):
     # Setup HTTP request data to get runs for category
     request_url = RUNS_ENDPOINT
     request_params = {
-        "category": category_id,
         "status": "verified"
     }
 
-    leaderboard_data = []
+    # Modify request depending on if we want to query a category or a whole game
+    if scope == Scope.CategoryScope:
+        request_params["category"] = source_id
+    elif scope == Scope.GameScope:
+        request_params["game"] = source_id
 
     # Request and extract leaderboard data for given category
     response = requests.get(url=request_url, params=request_params)
     response.raise_for_status()
 
+    leaderboard_data = []
     for run in response.json()["data"]:
         leaderboard_data.append(run)
 
