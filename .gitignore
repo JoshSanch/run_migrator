@@ -3,3 +3,10 @@ __pycache__
 api_key.json
 *.txt
 !requirements.txt
+
+# Python virtual env
+venv
+
+# Build artifacts
+build
+dist
