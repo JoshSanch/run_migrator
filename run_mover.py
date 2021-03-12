@@ -1,5 +1,6 @@
 from utils.credentials_loader import get_api_key
 from utils.migration_utils import retrieve_target_runs, generate_run_request_data, dump_runs, post_formatted_runs, RUNS_ENDPOINT
+from api.scoping import Scope
 
 """
 SRC has had a long running issue (documented as early as March of 2019) where
@@ -22,7 +23,7 @@ def move_runs(source_category_id, target_category_id, api_key_path, workaround_i
         print("API key loaded successfully.")
         print("Getting source leaderboard runs from Speedrun.com ...\n")
 
-        current_board_runs = retrieve_target_runs(source_category_id)
+        current_board_runs = retrieve_target_runs(source_category_id, Scope.CategoryScope)
 
         print("Runs successfully acquired.")
         print("Generating new run submissions based on existing runs ...\n")
