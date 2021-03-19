@@ -13,3 +13,45 @@ def extract_times(raw_times_dict):
         actual_times["ingame"] = raw_times_dict["ingame_t"]
 
     return actual_times
+
+def format_run_for_post(run, variables=None):
+    player_data = {
+        "rel": run["players"][0]["rel"],
+    }
+    if player_data["rel"] == "user":
+        player_data["id"] = run["players"][0]["id"]
+    else:
+        player_data["name"] = run["players"][0]["name"]
+
+    post_data = {
+        "run": {
+            "category": run["category"],
+            "date": run["date"],
+            "region": run["system"]["region"],
+            "platform": run["system"]["platform"],
+            "verified": False,
+            "times": {
+                "realtime": run["times"]["primary_t"],
+                "realtime_noloads": run["times"]["realtime_noloads_t"],
+                "ingame": run.get("times", {}).get("ingame_t", 0)
+            },
+            "players": [player_data],
+            "emulated": run["system"]["emulated"],
+            "comment": run.get("comment", None),
+        }
+    }
+
+    # Handle optional fields
+    if run["level"] != None:
+        post_data["run"]["level"] = run["level"]
+
+    if run.get("videos", None): 
+        post_data["run"]["video"] = run["videos"]["links"][0]["uri"]
+
+    if run.get("splits", None):
+        post_data["run"]["splitsio"] = run["splits"]["uri"].split("/")[-1]
+
+    if variables:
+        post_data["run"]["variables"] = variables
+
+    return post_data

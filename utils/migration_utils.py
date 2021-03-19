@@ -171,4 +171,3 @@ def retrieve_submitter_name(run):
     user_data = response.json()["data"]
     name = user_data["names"]["international"]
     return name
-    
