@@ -124,7 +124,7 @@ def generate_run_request_data(existing_runs, target_category_id: str, workaround
 
     return generated_runs
 
-def post_formatted_runs(runs, endpoint, api_key):
+def post_formatted_runs(runs, endpoint=RUNS_ENDPOINT, api_key):
     """
     Runs going in here should represent the data format found
     at https://github.com/speedruncomorg/api/blob/master/version1/runs.md#post-runs.
@@ -142,12 +142,12 @@ def post_formatted_runs(runs, endpoint, api_key):
         json_data = json.dumps(data)
 
         attempts = 0
-        response = requests.post(url=RUNS_ENDPOINT, data=json_data, headers=headers)
-        while attempts < 3 and not bool(response.status_code):
+        response = requests.post(url=endpoint, data=json_data, headers=headers)
+        while attempts < 3 and not response:
             attempts += 1
-            response = requests.post(url=RUNS_ENDPOINT, data=json_data, headers=headers)
+            response = requests.post(url=endpoint, data=json_data, headers=headers)
 
-        if not bool(response.status_code):
+        if not response:
             print(f"Run with date {run['date']} failed to upload.")
             print(response.content)
         
