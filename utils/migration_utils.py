@@ -124,7 +124,7 @@ def generate_run_request_data(existing_runs, target_category_id: str, workaround
 
     return generated_runs
 
-def post_formatted_runs(runs, endpoint=RUNS_ENDPOINT, api_key):
+def post_formatted_runs(runs, api_key, endpoint=RUNS_ENDPOINT):
     """
     Runs going in here should represent the data format found
     at https://github.com/speedruncomorg/api/blob/master/version1/runs.md#post-runs.
