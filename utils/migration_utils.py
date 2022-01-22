@@ -143,13 +143,13 @@ def post_formatted_runs(runs, endpoint, api_key):
 
         attempts = 0
         response = requests.post(url=RUNS_ENDPOINT, data=json_data, headers=headers)
-        while(attempts < 3 and response.status_code != 201):
+        while attempts < 3 and not bool(response.status_code):
             attempts += 1
             response = requests.post(url=RUNS_ENDPOINT, data=json_data, headers=headers)
 
-        if response.status_code != 201:
+        if not bool(response.status_code):
             print(f"Run with date {run['date']} failed to upload.")
-            print(response.status_code)
+            print(response.content)
         
 
 def dump_runs(runs, target_file_path):
