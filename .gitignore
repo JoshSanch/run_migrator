@@ -4,6 +4,7 @@ api_key.json
 *.txt
 .env
 !requirements.txt
+run_data
 
 # Python virtual env
 venv

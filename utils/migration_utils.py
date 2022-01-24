@@ -3,10 +3,10 @@ import requests
 
 from .src_conversion_utils import extract_times
 from api.scoping import Scope
-from typing import Dict
 
 RUNS_ENDPOINT = "https://www.speedrun.com/api/v1/runs"
 CATEGORIES_ENDPOINT = "https://www.speedrun.com/api/v1/categories"
+
 
 def retrieve_target_runs(source_id, scope) -> list:
     """
@@ -19,7 +19,7 @@ def retrieve_target_runs(source_id, scope) -> list:
         "status": "verified"
     }
 
-    # Modify request depending on if we want to query a category or a whole game
+    # Modify request depending on if querying a category or a game
     if scope == Scope.CategoryScope:
         request_params["category"] = source_id
     elif scope == Scope.GameScope:
@@ -53,10 +53,11 @@ def retrieve_target_runs(source_id, scope) -> list:
         for page_data in pagination_data:
             if page_data["rel"] == "next":
                 new_url = page_data["uri"]
-        
+
     return leaderboard_data
 
-def generate_run_request_data(existing_runs, target_category_id: str, workaround_active):
+
+def generate_run_request_data(existing_runs, target_category_id: str, workaround_active):  # noqa: E501
     """
     Populate all necessary POST data values as specified by the SRC
     documentation. Used as an intermediate state between either a POST
@@ -64,7 +65,8 @@ def generate_run_request_data(existing_runs, target_category_id: str, workaround
     """
     generated_runs = []
 
-    # Data params needed can be found at https://github.com/speedruncomorg/api/blob/master/version1/runs.md#post-runs
+    # Data params needed can be found at
+    # https://github.com/speedruncomorg/api/blob/master/version1/runs.md#post-runs
     for run in existing_runs:
         request_body = {}
         request_body["category"] = target_category_id
@@ -76,15 +78,16 @@ def generate_run_request_data(existing_runs, target_category_id: str, workaround
 
         request_body["times"] = extract_times(run["times"])
         comment = ""  # Start robust comment handling for workaround
-        
+
         # SRC is a good platform
         # See run_mover.py for an explanation of why this is needed
         if not workaround_active:
-            request_body["players"] = run["players"]  # ALWAYS HAVE THIS - OTHERWISE SRC DEFAULTS TO MAKING SUBMITTER THE RUNNER
-        
+            # ALWAYS HAVE THIS OR SRC DEFAULTS TO MAKING SUBMITTER THE RUNNER
+            request_body["players"] = run["players"]
+
             try:
                 request_body["players"][0].pop("uri")
-            except:
+            except KeyError:
                 print("no player url found")
 
         # Optional fields
@@ -96,7 +99,7 @@ def generate_run_request_data(existing_runs, target_category_id: str, workaround
 
         if "comment" in run and run["comment"] is not None:
             comment += run["comment"]
-        
+
         if "system" in run:
             if "platform" in run["system"]:  # Not actually optional
                 request_body["platform"] = run["system"]["platform"]
@@ -112,10 +115,11 @@ def generate_run_request_data(existing_runs, target_category_id: str, workaround
 
         # Handle SRC 500 error workaround - see run_mover.py for details
         if workaround_active:
+            mod_note = f"Mod note: Submitted by {retrieve_submitter_name(run)}"
             if comment:  # Append to existing comment
-                comment += f"\nMod note: Submitted by {retrieve_submitter_name(run)}"
+                comment += f"\n{mod_note}"
             else:
-                comment = f"Mod note: Submitted by {retrieve_submitter_name(run)}"
+                comment = mod_note
 
         # Finalize comment to append
         request_body["comment"] = comment
@@ -124,11 +128,12 @@ def generate_run_request_data(existing_runs, target_category_id: str, workaround
 
     return generated_runs
 
+
 def post_formatted_runs(runs, api_key, endpoint=RUNS_ENDPOINT):
     """
-    Runs going in here should represent the data format found
-    at https://github.com/speedruncomorg/api/blob/master/version1/runs.md#post-runs.
-    This will always be the case if raw API data is run through 
+    Runs going in here should represent the data format found at
+    https://github.com/speedruncomorg/api/blob/master/version1/runs.md#post-runs.
+    This will always be the case if raw API data is run through
     generate_run_request_data.
     """
     for run in runs:
@@ -145,28 +150,36 @@ def post_formatted_runs(runs, api_key, endpoint=RUNS_ENDPOINT):
         response = requests.post(url=endpoint, data=json_data, headers=headers)
         while attempts < 3 and not response:
             attempts += 1
-            response = requests.post(url=endpoint, data=json_data, headers=headers)
+            response = requests.post(
+                url=endpoint,
+                data=json_data,
+                headers=headers
+            )
 
         if not response:
             print(f"Run with date {run['date']} failed to upload.")
             print(response.content)
-        
+
 
 def dump_runs(runs, target_file_path):
     with open(target_file_path, "w+") as dump_file:
         for run in runs:
             json.dump(run, dump_file, indent=4)
 
+
 def retrieve_submitter_name(run):
-    run_player_data = run["players"][0]  # Assume this tool will only work for one-player runs
+    # Assume this tool will only work for one-player runs
+    run_player_data = run["players"][0]
     if run_player_data["rel"] == "guest":
         # Simple - submitter name is hardcoded into run data
         return run_player_data["name"]
 
     # Perform get request on user ID to get user data for name extraction
-    request_url = run_player_data["uri"]  # "rel" has to be "user" if they're not a guest, meaning api returns a user url
+    # "rel" has to be "user" if they're not a guest, meaning
+    # api returns a user url
+    request_url = run_player_data["uri"]
     response = requests.get(url=request_url)
-    
+
     # Extract name data
     user_data = response.json()["data"]
     name = user_data["names"]["international"]

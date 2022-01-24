@@ -5,7 +5,7 @@ def extract_times(raw_times_dict):
     actual_times = {}
     if raw_times_dict["realtime"] is not None:
         actual_times["realtime"] = raw_times_dict["realtime_t"]
-    
+
     if raw_times_dict["realtime_noloads"] is not None:
         actual_times["realtime_noloads"] = raw_times_dict["realtime_noloads_t"]
 
@@ -13,6 +13,7 @@ def extract_times(raw_times_dict):
         actual_times["ingame"] = raw_times_dict["ingame_t"]
 
     return actual_times
+
 
 def format_run_for_post(run, variables=None):
     player_data = {
@@ -42,10 +43,10 @@ def format_run_for_post(run, variables=None):
     }
 
     # Handle optional fields
-    if run["level"] != None:
+    if run["level"] is not None:
         post_data["run"]["level"] = run["level"]
 
-    if run.get("videos", None): 
+    if run.get("videos", None):
         post_data["run"]["video"] = run["videos"]["links"][0]["uri"]
 
     if run.get("splits", None):

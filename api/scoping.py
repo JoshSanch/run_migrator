@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class Scope(Enum):
     GameScope = 1
     CategoryScope = 2
