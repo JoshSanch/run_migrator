@@ -1,11 +1,9 @@
 import json
+from utils.endpoints import RUNS_ENDPOINT
 import requests
 
 from .src_conversion_utils import extract_times
 from api.scoping import Scope
-
-RUNS_ENDPOINT = "https://www.speedrun.com/api/v1/runs"
-CATEGORIES_ENDPOINT = "https://www.speedrun.com/api/v1/categories"
 
 
 def retrieve_target_runs(source_id, scope) -> list:

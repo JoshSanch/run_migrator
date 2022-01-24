@@ -5,11 +5,13 @@ import requests
 import pprint
 
 from utils.credentials_loader import get_api_key
-from utils.migration_utils import RUNS_ENDPOINT, CATEGORIES_ENDPOINT, retrieve_target_runs
+from utils.endpoints import RUNS_ENDPOINT
+from utils.migration_utils import retrieve_target_runs
 from utils.src_conversion_utils import format_run_for_post
 from api.scoping import Scope
 
 import id_data.game_ids as game_ids
+
 
 def update_emu_runs(source_id, scope, key_path): 
     api_key = get_api_key(key_path)
